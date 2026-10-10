@@ -19,6 +19,84 @@ gcc -Wall -Wextra -Wpedantic -std=c11 main.c event_queue.c -o event_queue
 ./event_queue
 ```
 
+## Cara Menjalankan (panduan lengkap)
+
+### 1. Clone dan masuk folder
+
+```bash
+git clone https://github.com/evairo176/Test_c.git
+cd Test_c
+```
+
+### 2. Kompilasi dengan GCC
+
+```bash
+gcc -Wall -Wextra -Wpedantic -std=c11 main.c event_queue.c -o event_queue
+```
+
+- GCC harus terpasang: `sudo apt install gcc` (Ubuntu/Debian),
+  `xcode-select --install` (macOS), atau MinGW-w64 (Windows).
+- Kalau sukses, tidak ada output sama sekali (0 error, 0 warning).
+- Di Windows pakai MinGW: perintah `gcc` sama, hasilnya
+  `event_queue.exe`.
+
+### 3. Jalankan program
+
+```bash
+./event_queue
+```
+
+PowerShell/CMD: `event_queue.exe`.
+
+### 4. Contoh output
+
+```
+[1] Queue kosong
+  GetEventCount = 0 (harap 0)
+  PopEvent saat kosong = 0 (harap 0)
+
+[2] Push satu event
+  Push ok, GetEventCount = 1 (harap 1)
+
+[3] Push beberapa event (urutan FIFO harus terjaga)
+  GetEventCount = 4 (harap 4)
+
+[4] Pop berurutan (FIFO)
+  pop -> id=1 name="EVENT_INIT"
+  pop -> id=2 name="EVENT_LOGIN"
+  pop -> id=3 name="EVENT_ORDER"
+  pop -> id=4 name="EVENT_PAYMENT"
+  GetEventCount = 0 (harap 0)
+
+[5] Pop saat kosong = 0 (harap 0)
+
+[7a] ClearEvent queue kosong (harus aman)
+[7b] ClearEvent queue berisi 3 event
+  Sebelum clear GetEventCount = 3 (harap 3)
+  Sesudah clear GetEventCount = 0 (harap 0)
+
+[8] Push lagi setelah ClearEvent
+  Push ok, GetEventCount = 1 (harap 1)
+  pop -> id=20 name="EVENT_AFTER_CLEAR"
+
+[9] Final GetEventCount = 0 (harap 0, semua memori di-free)
+SELESAI - semua skenario lolos tanpa crash.
+```
+
+### 5. Pemeriksaan memori (opsional, direkomendasikan)
+
+```bash
+# AddressSanitizer - deteksi leak/double-free/use-after-free
+gcc -Wall -Wextra -Wpedantic -std=c11 -fsanitize=address,undefined -g main.c event_queue.c -o event_queue_asan
+ASAN_OPTIONS=detect_leaks=1 ./event_queue_asan
+
+# atau valgrind kalau tersedia
+valgrind --leak-check=full ./event_queue
+```
+
+Keduanya harus bersih: ASAN exit 0, valgrind melaporkan
+`in use at exit: 0 bytes`.
+
 Kompilasi dengan AddressSanitizer (opsional, untuk deteksi memory error):
 
 ```bash
